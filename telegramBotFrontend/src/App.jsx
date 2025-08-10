@@ -10,6 +10,7 @@ function App() {
     id: "",
     name: "",
   });
+  const [sent, setSent] = useState(false)
 
   useEffect(() => {
     const userInfo = new URLSearchParams(location.search);
@@ -33,8 +34,10 @@ function App() {
 
   const handleSubmit = async () =>{
     try{
-      const response = await axios.post(`http://localhost:3000/createStatus`, statusData)
+      const response = await axios.post(`http://localhost:3000/status`, statusData);
+
       alert("successfully sent");
+      setSent(true);
     } catch( error){
       console.log(error);
     }
@@ -44,8 +47,11 @@ function App() {
     <>
       <div className=''>
         <h1>Hello {statusData?.name}!!</h1>
-        <input type="text" name="status" id="stauts" onChange={handleStatus} placeholder='Enter your Status'/> <br /><br />
+        <input type="text" name="status" id="stauts" onChange={handleStatus} placeholder="What's on your mind?" className='inputText'
+         /> <br /><br />
         <button onClick={handleSubmit}>Send Status</button>
+        <h2>What you're thinking is: </h2>
+        <p>{ sent ?? statusData.status}</p>
       </div>
     </>
   )
