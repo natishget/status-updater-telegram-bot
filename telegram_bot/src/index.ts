@@ -1,128 +1,127 @@
-import { Telegraf, Markup } from "telegraf";
-import { message, callbackQuery, channelPost } from "telegraf/filters";
+import { Telegraf, Markup, Context } from "telegraf";
 import { createNewStatus, fetchLatestStatus, fetchUserLatestStatus } from "../src/statusService.js";
-import http from 'http';
+import http, { IncomingMessage, ServerResponse } from "http";
 
+// interface for a single user record
 interface UserRecord {
     name: string;
     id: number;
     status: string;
-    createdAt: Date;
+    createdAt: string; // JSON will give string, not Date
 }
 
-const bot = new Telegraf("7663200590:AAE5ASn3nggCioJbU8DkyKR2IW2qqfuEF58");
+// create bot instance
+const bot = new Telegraf<Context>("7663200590:AAE5ASn3nggCioJbU8DkyKR2IW2qqfuEF58");
 const PORT = 3001;
 
-bot.start((ctx) => {
-    const name = ctx.update.message.from.first_name;
-    const chatId = ctx.update.message.from.id;
-    console.log(name, chatId)
-    //const url = `https://status-updater-telegram-bot.vercel.app/?name=${encodeURIComponent(name)}&chatId=${chatId}`
-    const url = `https://status-updater-telegram-bot.vercel.app/`
+// /start handler
+bot.start((ctx: Context) => {
+    const name = ctx.message?.from.first_name || "User";
+    const chatId = ctx.message?.from.id;
+    console.log(name, chatId);
+
+    const url = `https://status-updater-telegram-bot.vercel.app/`;
 
     ctx.reply(
-        `Hello ${ctx.update.message.from.first_name}!`,
-        Markup.inlineKeyboard(
-            [
-                // Markup.button.url("🌐 Visit Website", url),
-                Markup.button.webApp('🌐 Visit Website', url)
-            ]),
+        `Hello ${name}!`,
+        Markup.inlineKeyboard([
+            Markup.button.webApp("🌐 Visit Website", url),
+        ])
     );
 
     ctx.reply(
-        'Choose an option:',
-        Markup.keyboard([
-            ['/start', '/latest', '/mystatus'] // Buttons send these commands
-        ]).resize()
+        "Choose an option:",
+        Markup.keyboard([["/start", "/latest", "/mystatus"]]).resize()
     );
 });
 
-const server = http.createServer((req, res) => {
+// http server for status updates
+const server = http.createServer((req: IncomingMessage, res: ServerResponse) => {
     if (req.method === "POST" && req.url === "/status") {
-        let body = '';
-        req.on('data', chunk => {
+        let body = "";
+        req.on("data", (chunk: Buffer) => {
             body += chunk.toString();
         });
-        req.on('end', () => {
+        req.on("end", () => {
             try {
-                const data = JSON.parse(body); // parse JSON body
-                const response = createNewStatus(data); // your function
-                // sendResponseOnBot(response);
-                res.writeHead(200, { 'Content-Type': 'application/json' });
+                const data = JSON.parse(body);
+                const response = createNewStatus(data);
+                res.writeHead(200, { "Content-Type": "application/json" });
                 res.end(JSON.stringify(response));
-                console.log(response)
+                console.log(response);
             } catch (err) {
-                res.writeHead(400, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ error: 'Invalid JSON' }));
+                res.writeHead(400, { "Content-Type": "application/json" });
+                res.end(JSON.stringify({ error: "Invalid JSON" }));
             }
         });
-
     } else {
         res.writeHead(404);
         res.end();
     }
 });
 
-
+// send message to bot (currently unused in your logic)
 const sendResponseOnBot = (message: UserRecord) => {
-    bot.on('text', (ctx) => {
-        ctx.reply(`👤 User: ${message?.name}\n📌 Status: ${message?.status}\n🕒 Created At: ${message?.createdAt}`);
+    bot.on("text", (ctx: Context) => {
+        ctx.reply(
+            `👤 User: ${message?.name}\n📌 Status: ${message?.status}\n🕒 Created At: ${message?.createdAt}`
+        );
     });
 };
 
-
-// Handle /latest
-bot.command('latest', (ctx) => {
-
+// /latest command
+bot.command("latest", (ctx: Context) => {
     const latest = fetchLatestStatus();
 
-    if (!latest) {
+    if (!latest || latest.length === 0) {
         return ctx.reply("No status found.");
     }
 
-    // console.log(latest);
-
-    const message = 'Latest User Status\n\n' +
+    const message =
+        "Latest User Status\n\n" +
         latest
             .slice(0, 3)
-            .map(user =>
-                `👤 User: ${user?.id ?? ''}\n📌 Status: ${user?.status ?? ''}\n🕒 Created At: ${user?.createdAt ?? ''}\n`
+            .map(
+                (user) =>
+                    `ID: ${user?.id ?? ""}\n👤 User: ${user?.name ?? ""}\n📌 Status: ${user?.status ?? ""
+                    }\n🕒 Created At: ${user?.createdAt ?? ""}\n`
             )
-            .join('\n');
+            .join("\n");
 
     ctx.reply(message);
 });
 
-
-
-// Handle /mystatus
-bot.command('mystatus', (ctx) => {
-    const chatId = ctx.update.message.from.id
+// /mystatus command
+bot.command("mystatus", (ctx: Context) => {
+    const chatId = ctx.message?.from.id;
+    if (!chatId) {
+        return ctx.reply("Could not get your chat ID.");
+    }
 
     const latest = fetchUserLatestStatus(chatId);
 
-    if (!latest) {
-        return ctx.reply("You have no status yet");
+    if (!latest || latest.length === 0) {
+        return ctx.reply("You have no status yet.");
     }
 
-    const message = 'Latest User Status\n\n' +
+    const message =
+        "Your Latest Status\n\n" +
         latest
             .slice(0, 3)
-            .map(user =>
-                `👤 User: ${user?.id ?? ''}\n📌 Status: ${user?.status ?? ''}\n🕒 Created At: ${user?.createdAt ?? ''}\n`
+            .map(
+                (user) =>
+                    `ID: ${user?.id ?? ""}\n👤 User: ${user?.id ?? ""}\n📌 Status: ${user?.status ?? ""
+                    }\n🕒 Created At: ${user?.createdAt ?? ""}\n`
             )
-            .join('\n');
+            .join("\n");
 
     ctx.reply(message);
-
-
 });
 
-
+// start bot
 bot.launch();
 
+// start server
 server.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
 });
-
-
