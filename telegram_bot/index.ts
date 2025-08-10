@@ -32,11 +32,15 @@ const server = http.createServer((req, res) => {
 
 
 bot.start((ctx) => {
+    const name = ctx.update.message.from.first_name;
+    const chatId = ctx.update.message.from.id;
+    console.log(name, chatId)
+    const url = `https://status-updater-telegram-bot.vercel.app/?name=${encodeURIComponent(name)}&chatId=${chatId}`
     ctx.reply(
         `Hello ${ctx.update.message.from.first_name}!`,
         Markup.inlineKeyboard(
             [
-                Markup.button.url("🌐 Visit Website", "https://www.typescriptlang.org/docs/handbook/2/basic-types.html"),
+                Markup.button.url("🌐 Visit Website", url),
             ]),
     );
 

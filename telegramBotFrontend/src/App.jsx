@@ -25,7 +25,10 @@ function App() {
 
   const handleStatus = (e) =>{
     const value = e.target.value;
-    setStatusData(value);
+    setStatusData(prev => ({
+      ...prev,
+      status: value
+    }));
   }
 
   const handleSubmit = async () =>{
