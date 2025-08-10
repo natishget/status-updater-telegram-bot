@@ -4,7 +4,8 @@
 # Ignore all node_modules in any folder
 **/node_modules/
 telegram_bot/node_modules/
-telegramBotFrontend/node_modules/
+telegramBotFrontend/node_modules/rm -rf .git
+
 
 
 
