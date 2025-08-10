@@ -11,7 +11,7 @@ interface UserRecord {
 }
 
 const bot = new Telegraf("7663200590:AAE5ASn3nggCioJbU8DkyKR2IW2qqfuEF58");
-const PORT = 3000;
+const PORT = 3001;
 
 bot.start((ctx) => {
     const name = ctx.update.message.from.first_name;
