@@ -1,5 +1,5 @@
 import { Telegraf, Markup, Context } from "telegraf";
-import { createNewStatus, fetchLatestStatus, fetchUserLatestStatus } from "../src/statusService.js";
+import { createNewStatus, fetchLatestStatus, fetchUserLatestStatus } from "./statusService.js";
 import http, { IncomingMessage, ServerResponse } from "http";
 
 // interface for a single user record
