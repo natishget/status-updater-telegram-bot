@@ -10,6 +10,7 @@ function App() {
     id: "",
     name: "",
   });
+  const [customeError, setCustomError] = useState("")
   const [sent, setSent] = useState(false)
 
   useEffect(() => {
@@ -25,7 +26,7 @@ function App() {
       try {
         data.user = JSON.parse(data.user);
       } catch (err) {
-        console.error("Error parsing user JSON", err);
+        setCustomError(err);
         return;
       }
   
@@ -58,6 +59,7 @@ function App() {
         <button onClick={handleSubmit}>Send Status</button>
         <h2>What you're thinking is: </h2>
         <p>{ sent ?? statusData.status}</p>
+        <p>{ customeError }</p>
       </div>
     </>
   )
