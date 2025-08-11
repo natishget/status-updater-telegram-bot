@@ -13,24 +13,30 @@ function App() {
   const [sent, setSent] = useState(false)
 
   useEffect(() => {
-    const userInfo = new URLSearchParams(location.search);
-    const chatId = userInfo.get('chatId');
-    const name = userInfo.get('name');
-
-    setStatusData(prev => ({
-      ...prev,
-      id: chatId,
-      name: name,
-    }));
-  }, [location.search]);
-
-  const handleStatus = (e) =>{
-    const value = e.target.value;
-    setStatusData(prev => ({
-      ...prev,
-      status: value
-    }));
-  }
+    const tg = window.Telegram.WebApp;
+    const initData = tg.initData;
+  
+    if (!initData) return;
+  
+    const params = new URLSearchParams(initData);
+    const data = Object.fromEntries(params);
+  
+    if (data.user) {
+      try {
+        data.user = JSON.parse(data.user);
+      } catch (err) {
+        console.error("Error parsing user JSON", err);
+        return;
+      }
+  
+      setStatusData(prev => ({
+        ...prev,
+        id: data.user.id,
+        name: data.user.first_name,
+      }));
+    }
+  }, []);
+  
 
   const handleSubmit = async () =>{
     try{
