@@ -14,7 +14,7 @@ function App() {
   useEffect(() => {
     // ✅ Make sure Telegram WebApp object exists
     if (!window.Telegram || !window.Telegram.WebApp) {
-      setCustomError("Telegram WebApp not found");
+      setCustomError("Not in Telegram");
       return;
     }
 
