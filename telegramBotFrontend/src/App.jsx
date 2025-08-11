@@ -37,6 +37,18 @@ function App() {
       }));
     }
   }, []);
+
+  const handleStatus = (e) =>{
+    const value = e.target.value;
+    setStatusData(prev => ({
+      ...prev,
+      status: value
+    }))
+  } 
+
+  useEffect(() =>{
+    console.log(statusData)
+  }, [statusData])
   
 
   const handleSubmit = async () =>{
